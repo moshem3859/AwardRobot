@@ -1,0 +1,11 @@
+{
+  "name": "award-robot-live",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cash + award self-transfer search MVP",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "engines": {"node": ">=18"}
+}

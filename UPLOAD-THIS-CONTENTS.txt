@@ -1,0 +1,17 @@
+IMPORTANT
+
+Upload the CONTENTS of this folder to the root of your GitHub AwardRobot repository.
+Do not upload the ZIP itself.
+
+The GitHub repository must show these folders at the top level:
+- public/
+- src/
+
+And these files at the top level:
+- package.json
+- server.js
+- test.js
+- README.md
+- render.yaml
+
+The earlier deployment failed because providers.js and combiner.js were uploaded to the repository root instead of inside src/.

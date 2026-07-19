@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Award Robot</title><link rel="stylesheet" href="/style.css"></head>
+<body><main><header><div><span class="eyebrow">LIVE SEARCH MVP</span><h1>Award Transfer Robot</h1><p>Combine cash and award segments into ranked self-transfer itineraries.</p></div><div id="status" class="pill">Checking providers…</div></header>
+<section class="panel"><form id="form"><div class="grid">
+<label>Origins<input id="origins" value="JFK,EWR,BOS"></label><label>Destination<input id="destination" value="TLV"></label>
+<label>Start date<input id="startDate" type="date" required></label><label>Passengers<input id="passengers" type="number" min="1" max="9" value="2"></label>
+<label>Minimum layover<input id="minLayoverHours" type="number" value="3"></label><label>Maximum layover<input id="maxLayoverHours" type="number" value="24"></label>
+<label class="check"><input id="allowAirportChange" type="checkbox"> Allow nearby-airport changes</label><label class="check"><input id="allowOvernight" type="checkbox" checked> Allow overnight connections</label>
+</div><button>Search and combine</button></form></section>
+<section id="summary" class="summary"></section><section id="results"></section></main><script src="/app.js"></script></body></html>
