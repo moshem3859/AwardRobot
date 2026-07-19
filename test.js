@@ -1,4 +1,5 @@
-const assert=require('assert'); const {buildCombinations}=require('./src/combiner');
-const input={origins:['JFK'],destination:'TLV',passengers:2,minLayoverHours:3,maxLayoverHours:20,allowAirportChange:false,allowOvernight:true};
-const s=[{id:'a',kind:'award',origin:'JFK',destination:'MAD',departure:'2026-08-01T20:00:00Z',arrival:'2026-08-02T07:00:00Z',seats:2,points:50000,cash:100},{id:'b',kind:'cash',origin:'MAD',destination:'TLV',departure:'2026-08-02T13:00:00Z',arrival:'2026-08-02T18:00:00Z',seats:2,points:0,cash:200}];
-const c=buildCombinations(s,input); assert.equal(c.length,1); assert.equal(c[0].tripPoints,100000); assert.equal(c[0].tripCash,600); console.log('Tests passed');
+const assert=require('assert');const {expandLocation}=require('./src/locations');const {buildCombinations}=require('./src/combiner');
+assert.deepEqual(expandLocation('NYC'),['JFK','EWR','LGA']);assert(expandLocation('EUROPE').includes('MAD'));
+const input={originAirports:['TLV'],connectionAirports:['MAD'],destinationAirports:['JFK'],passengers:2,minLayoverHours:3,maxLayoverHours:20,airportChangeExtraHours:3,allowAirportChange:false,allowOvernight:true,allowedCombinations:['cash + award'],pointValueCpp:1.25};
+const s=[{id:'a',kind:'cash',origin:'TLV',destination:'MAD',departure:'2026-08-01T20:00:00Z',arrival:'2026-08-02T07:00:00Z',seats:2,points:0,cash:200,verification:'live'},{id:'b',kind:'award',origin:'MAD',destination:'JFK',departure:'2026-08-02T13:00:00Z',arrival:'2026-08-02T18:00:00Z',seats:2,points:30000,cash:80,verification:'live'}];
+const c=buildCombinations(s,input);assert.equal(c.length,1);assert.equal(c[0].tripPoints,60000);assert.equal(c[0].tripCash,560);console.log('Tests passed');

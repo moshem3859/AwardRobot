@@ -1,9 +1,13 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Award Robot</title><link rel="stylesheet" href="/style.css"></head>
-<body><main><header><div><span class="eyebrow">LIVE SEARCH MVP</span><h1>Award Transfer Robot</h1><p>Combine cash and award segments into ranked self-transfer itineraries.</p></div><div id="status" class="pill">Checking providers…</div></header>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AwardRobot</title><link rel="stylesheet" href="/style.css"></head>
+<body><main><header><div><span class="eyebrow">AWARDROBOT V2</span><h1>Worldwide cash + award route builder</h1><p>Search broad airport groups and let the engine assemble, validate, and rank self-transfer combinations.</p></div><div id="status" class="pill">Checking engine…</div></header>
 <section class="panel"><form id="form"><div class="grid">
-<label>Origins<input id="origins" value="JFK,EWR,BOS"></label><label>Destination<input id="destination" value="TLV"></label>
-<label>Start date<input id="startDate" type="date" required></label><label>Passengers<input id="passengers" type="number" min="1" max="9" value="2"></label>
-<label>Minimum layover<input id="minLayoverHours" type="number" value="3"></label><label>Maximum layover<input id="maxLayoverHours" type="number" value="24"></label>
-<label class="check"><input id="allowAirportChange" type="checkbox"> Allow nearby-airport changes</label><label class="check"><input id="allowOvernight" type="checkbox" checked> Allow overnight connections</label>
-</div><button>Search and combine</button></form></section>
-<section id="summary" class="summary"></section><section id="results"></section></main><script src="/app.js"></script></body></html>
+<label>From airport, city group, or region<input id="origin" value="TLV" placeholder="TLV, NYC, EUROPE"></label>
+<label>To airport, city group, or region<input id="destination" value="NYC" placeholder="NYC, LON, NORTH_AMERICA"></label>
+<label>Connection region or airport list<input id="connectionRegion" value="EUROPE" placeholder="EUROPE or MAD,ATH,FCO"></label>
+<label>Departure date<input id="startDate" type="date" required></label><label>Passengers<input id="passengers" type="number" min="1" max="9" value="2"></label>
+<label>Point value (cents each)<input id="pointValueCpp" type="number" min="0" step="0.05" value="1.25"></label>
+<label>Minimum layover hours<input id="minLayoverHours" type="number" min="1" value="3"></label><label>Maximum layover hours<input id="maxLayoverHours" type="number" min="2" value="24"></label>
+<label>Extra hours for airport change<input id="airportChangeExtraHours" type="number" min="0" value="3"></label>
+</div><div class="checks"><label><input id="allowAirportChange" type="checkbox"> Allow nearby-airport changes</label><label><input id="allowOvernight" type="checkbox" checked> Allow overnight connections</label></div>
+<fieldset><legend>Allowed ticket combinations</legend><div class="checks"><label><input class="combo" value="cash + award" type="checkbox" checked> Cash + award</label><label><input class="combo" value="award + cash" type="checkbox" checked> Award + cash</label><label><input class="combo" value="award + award" type="checkbox" checked> Award + award</label><label><input class="combo" value="cash + cash" type="checkbox" checked> Cash + cash</label></div></fieldset>
+<button>Build worldwide combinations</button></form></section><section id="summary" class="summary"></section><section id="results"></section></main><script src="/app.js"></script></body></html>

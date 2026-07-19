@@ -1,8 +1,8 @@
 {
-  "name": "award-robot-live",
-  "version": "0.1.0",
+  "name": "awardrobot-v2",
+  "version": "0.2.0",
   "private": true,
-  "description": "Cash + award self-transfer search MVP",
+  "description": "Worldwide cash and award self-transfer combination engine",
   "scripts": {
     "start": "node server.js",
     "test": "node test.js"

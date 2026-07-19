@@ -1,63 +1,18 @@
-const DEFAULT_GATEWAYS = ['LHR','CDG','AMS','MAD','BCN','LIS','FCO','MXP','ZRH','VIE','PRG','WAW','ATH','OTP','FRA','MUC','BRU','DUB','CPH'];
-
-async function amadeusToken(){
-  const base=process.env.AMADEUS_BASE_URL || 'https://test.api.amadeus.com';
-  const body=new URLSearchParams({grant_type:'client_credentials',client_id:process.env.AMADEUS_CLIENT_ID,client_secret:process.env.AMADEUS_CLIENT_SECRET});
-  const r=await fetch(`${base}/v1/security/oauth2/token`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
-  if(!r.ok) throw new Error(`Amadeus token failed: ${r.status}`);
-  return (await r.json()).access_token;
-}
-
-function isoWithFallback(date,time='10:00:00Z'){ return `${date}T${time}`; }
+function addDays(date,n){const d=new Date(`${date}T00:00:00Z`);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
+function at(date,time){return `${date}T${time}:00Z`;}
 function demoSegments(input){
-  const d=input.startDate;
-  const next=new Date(`${d}T00:00:00Z`); next.setUTCDate(next.getUTCDate()+1); const d2=next.toISOString().slice(0,10);
-  return [
-    {id:'demo1',kind:'award',origin:input.origins[0],destination:'MAD',departure:isoWithFallback(d,'21:00:00Z'),arrival:isoWithFallback(d2,'07:15:00Z'),airline:'IB',flightNumber:'IB-demo',cabin:'BUSINESS',seats:8,points:42500,cash:119,program:'Avios',source:'demo',verification:'demo'},
-    {id:'demo2',kind:'cash',origin:input.origins[1]||input.origins[0],destination:'ATH',departure:isoWithFallback(d,'18:00:00Z'),arrival:isoWithFallback(d2,'08:30:00Z'),airline:'UA',flightNumber:'UA-demo',cabin:'ECONOMY',seats:9,points:0,cash:449,program:null,source:'demo',verification:'demo'},
-    {id:'demo3',kind:'award',origin:'MAD',destination:input.destination,departure:isoWithFallback(d2,'14:30:00Z'),arrival:isoWithFallback(d2,'19:15:00Z'),airline:'UX',flightNumber:'UX-demo',cabin:'ECONOMY',seats:8,points:18000,cash:42,program:'Flying Blue',source:'demo',verification:'demo'},
-    {id:'demo4',kind:'cash',origin:'ATH',destination:input.destination,departure:isoWithFallback(d2,'12:30:00Z'),arrival:isoWithFallback(d2,'14:30:00Z'),airline:'A3',flightNumber:'A3-demo',cabin:'ECONOMY',seats:9,points:0,cash:137,program:null,source:'demo',verification:'demo'}
-  ];
-}
-
-async function searchAmadeus(input){
-  if(!process.env.AMADEUS_CLIENT_ID || !process.env.AMADEUS_CLIENT_SECRET) return [];
-  const token=await amadeusToken();
-  const base=process.env.AMADEUS_BASE_URL || 'https://test.api.amadeus.com';
-  const gateways=(input.gateways.length?input.gateways:DEFAULT_GATEWAYS).slice(0,8);
-  const pairs=[];
-  for(const o of input.origins.slice(0,3)) for(const g of gateways) pairs.push([o,g]);
-  for(const g of gateways) pairs.push([g,input.destination]);
-  const rows=[];
-  for(const [origin,dest] of pairs){
-    const url=new URL(`${base}/v2/shopping/flight-offers`);
-    url.searchParams.set('originLocationCode',origin); url.searchParams.set('destinationLocationCode',dest);
-    url.searchParams.set('departureDate',input.startDate); url.searchParams.set('adults',String(input.passengers));
-    url.searchParams.set('max','5'); url.searchParams.set('currencyCode','USD');
-    const r=await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
-    if(!r.ok) continue;
-    const j=await r.json();
-    for(const offer of j.data||[]){
-      const itin=offer.itineraries?.[0]; if(!itin?.segments?.length) continue;
-      const f=itin.segments[0], l=itin.segments[itin.segments.length-1];
-      rows.push({id:`am-${offer.id}-${origin}-${dest}`,kind:'cash',origin,destination:dest,departure:f.departure.at,arrival:l.arrival.at,airline:f.carrierCode,flightNumber:`${f.carrierCode}${f.number}`,cabin:'UNKNOWN',seats:input.passengers,points:0,cash:Number(offer.price?.grandTotal||0)/input.passengers,program:null,source:'amadeus',verification:'live'});
-    }
-  }
+  const d=input.startDate,d2=addDays(d,1);const origins=input.originAirports.slice(0,3);const hubs=input.connectionAirports.slice(0,12);const dests=input.destinationAirports.slice(0,3);
+  const rows=[];let id=1;
+  origins.forEach((o,oi)=>hubs.forEach((h,hi)=>{
+    if((oi+hi)%3===0) rows.push({id:`d${id++}`,kind:'cash',origin:o,destination:h,departure:at(d,`${String(16+oi).padStart(2,'0')}:10`),arrival:at(d2,`${String(6+(hi%4)).padStart(2,'0')}:20`),airline:['LY','A3','W6'][hi%3],flightNumber:`DEMO${id}`,cabin:'ECONOMY',seats:9,points:0,cash:160+hi*18,source:'demo',verification:'demo'});
+    if((oi+hi)%4===0) rows.push({id:`d${id++}`,kind:'award',origin:o,destination:h,departure:at(d,`${String(18+oi).padStart(2,'0')}:00`),arrival:at(d2,`${String(7+(hi%3)).padStart(2,'0')}:15`),airline:['AF','IB','UA'][hi%3],flightNumber:`DEMO${id}`,cabin:hi%2?'BUSINESS':'ECONOMY',seats:4+(hi%5),points:18000+hi*2500,cash:35+hi*4,program:['Flying Blue','Avios','Aeroplan'][hi%3],source:'demo',verification:'demo'});
+  }));
+  hubs.forEach((h,hi)=>dests.forEach((dest,di)=>{
+    rows.push({id:`d${id++}`,kind:hi%2?'award':'cash',origin:h,destination:dest,departure:at(d2,`${String(12+(hi%7)).padStart(2,'0')}:30`),arrival:at(d2,`${String(17+(hi%5)).padStart(2,'0')}:40`),airline:['DL','UA','AA','BA'][hi%4],flightNumber:`DEMO${id}`,cabin:hi%3===0?'BUSINESS':'ECONOMY',seats:3+(hi%7),points:hi%2?22000+hi*1800:0,cash:hi%2?55+hi*5:280+hi*22,program:hi%2?['Flying Blue','Avios','Aeroplan'][hi%3]:null,source:'demo',verification:'demo'});
+  }));
   return rows;
 }
-
-async function searchSeatsAero(input){
-  if(!process.env.SEATSAERO_API_KEY) return [];
-  // Provider contract and endpoint shape vary by account. This adapter is intentionally isolated.
-  // Replace this call with the exact endpoint/fields supplied in your Seats.aero Partner API agreement.
-  return [];
-}
-
 async function searchAllProviders(input){
-  const warnings=[]; const providers={amadeus:'disabled',seatsAero:'disabled',demo:'enabled'}; let segments=[];
-  try { const r=await searchAmadeus(input); if(r.length){segments.push(...r); providers.amadeus='live';} else if(process.env.AMADEUS_CLIENT_ID) providers.amadeus='no-results'; } catch(e){warnings.push(e.message); providers.amadeus='error';}
-  try { const r=await searchSeatsAero(input); if(r.length){segments.push(...r); providers.seatsAero='live';} else if(process.env.SEATSAERO_API_KEY) providers.seatsAero='connector-needs-contract-endpoint'; } catch(e){warnings.push(e.message); providers.seatsAero='error';}
-  if(!segments.length){segments=demoSegments(input); warnings.push('No live provider returned results, so demo data is shown.');}
-  return {segments,providers,warnings};
+  return {segments:demoSegments(input),providers:{demo:'enabled',cashApi:'not-connected',awardApi:'not-connected'},warnings:['Using generated demo data. The worldwide combination engine is active; live providers are not connected yet.']};
 }
 module.exports={searchAllProviders};
